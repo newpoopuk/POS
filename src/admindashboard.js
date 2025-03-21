@@ -5,6 +5,7 @@ const AdminDashboard = ({ onLogout }) => {
   const navigate = useNavigate();
 
   const handleGoToMenu = () => {
+    console.log("Navigating to /menu"); // Debugging log
     navigate("/menu");
   };
 

@@ -4,7 +4,7 @@ const MenuPage = () => {
   return (
     <div>
       <h1>Menu Page</h1>
-      <p>This is the website menu.</p>
+      <p>This is your website's menu.</p>
     </div>
   );
 };
