@@ -17,7 +17,7 @@ app = FastAPI()
 load_dotenv()
 
 # MongoDB connection
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://newpoopuk5:IEmkYZwoUMPHUqBp@pos1-shard-00-00.2qznf.mongodb.net:27017,pos1-shard-00-01.2qznf.mongodb.net:27017,pos1-shard-00-02.2qznf.mongodb.net:27017/POS1?replicaSet=atlas-oiwgrh-shard-0&ssl=true&authSource=admin")
+MONGO_URI = "mongodb://newpoopuk5:IEmkYZwoUMPHUqBp@pos1-shard-00-00.2qznf.mongodb.net:27017,pos1-shard-00-01.2qznf.mongodb.net:27017,pos1-shard-00-02.2qznf.mongodb.net:27017/POS1?replicaSet=atlas-oiwgrh-shard-0&ssl=true&authSource=admin"
 
 client = MongoClient(MONGO_URI, tls=True, tlsCAFile=certifi.where())
 
