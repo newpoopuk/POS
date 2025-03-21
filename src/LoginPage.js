@@ -22,7 +22,7 @@ const LoginPage = ({ onLogin }) => {
     console.log('Sending login request with:', { username, password });
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/users/authenticate/', {
+      const response = await axios.post('https://pos-jrd9.onrender.com/users/authenticate', {
         username: username,
         password: password,
       });
