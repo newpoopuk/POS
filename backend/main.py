@@ -79,8 +79,6 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-# Pydantic models
-class UserAuth(BaseModel):
     username: str
     password: str
 
@@ -90,62 +88,12 @@ class User(BaseModel):
     customer_name: str
     agentId: str
 
-@app.post("/users/authenticate/")
-async def authenticate_user(user: UserAuth):
-    db_user = user_collection.find_one({"username": user.username})
-    if not db_user or not verify_password(user.password, db_user["password"]):
-        raise HTTPException(status_code=400, detail="Invalid username or password")
-    return {
-        "customer_name": db_user["customer_name"],
-        "key": "abc1357",
-        "agentId": db_user["agentId"],
-    }
-
-@app.post("/users/")
-async def create_user(user: User):
-    if user_collection.find_one({"username": user.username}):
-        raise HTTPException(status_code=400, detail="Username already exists")
-    hashed_password = hash_password(user.password)
-    user_data = {
-        "username": user.username,
-        "password": hashed_password,
-        "customer_name": user.customer_name,
-        "agentId": user.agentId,
-    }
-    user_collection.insert_one(user_data)
-    return {"message": "User created successfully"}
-
-# Add admin user if not exists
-@app.on_event("startup")
-async def add_admin_user():
-    admin_user = {
-        "username": "admin",
-        "password": hash_password("admin"),  # Hash the password
-        "customer_name": "Admin",
-        "agentId": "admin123"
-    }
-    if not user_collection.find_one({"username": "admin"}):
-        user_collection.insert_one(admin_user)
-        print("Admin user added successfully.")
-    else:
-        print("Admin user already exists.")
-# ---------------------------
 class KitKat(BaseModel):
     agent: str
     data_lake: List[List]  # Each element should be a list (e.g., [product, value])
 
 class Store(BaseModel):
     data_lake: List[List]
-
-class User(BaseModel):
-    username: str
-    password: str
-    customer_name: str
-    agentId: str
-
-class UserAuth(BaseModel):
-    username: str
-    password: str
 
 class Commodity(BaseModel):
     ref: int
@@ -155,6 +103,21 @@ class Commodity(BaseModel):
     class Config:
         # Helps convert ObjectId from MongoDB to string if needed.
         from_attributes = True
+
+# Add admin user if not exists
+@app.on_event("startup")
+async def add_admin_user():
+    admin_user = {
+        "username": "admin",
+        "password": "admin",  # Store plain text password
+        "customer_name": "Admin",
+        "agentId": "admin123"
+    }
+    if not user_collection.find_one({"username": "admin"}):
+        user_collection.insert_one(admin_user)
+        print("Admin user added successfully.")
+    else:
+        print("Admin user already exists.")
 
 # ---------------------------
 # FastAPI Endpoints
