@@ -10,6 +10,9 @@ const AdminDashboard = ({ onLogout }) => {
         Logout
       </Button>
       {/* Add admin-specific features here */}
+      <Link to="/menu">
+        <button>Go to Menu</button>
+      </Link>
     </div>
   );
 };
