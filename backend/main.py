@@ -99,7 +99,10 @@ class Commodity(BaseModel):
     ref: int
     name: str
     image: str
-
+class UserAuth(BaseModel):
+    username: str
+    password: str
+    
     class Config:
         # Helps convert ObjectId from MongoDB to string if needed.
         from_attributes = True
