@@ -18,7 +18,7 @@ function App() {
   const [customer_name, setCustomerName] = useState("");
   const [key, setKey] = useState("");
   const [agentId, setAgentId] = useState("");
-  const [role, setRole] = useState(""); // Add role state
+  const [role, setRole] = useState("");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -57,6 +57,7 @@ function App() {
           <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
         ) : (
           <>
+            {/* Default route */}
             <Route
               path="/"
               element={
@@ -181,6 +182,7 @@ function App() {
                 )
               }
             />
+            {/* Menu route */}
             <Route path="/menu" element={<MenuPage />} />
           </>
         )}
