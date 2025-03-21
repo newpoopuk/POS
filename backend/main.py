@@ -21,7 +21,7 @@ load_dotenv()  # Uncomment this line
 MONGO_URI = os.getenv("MONGO_URI")
 
 # Connect to MongoDB Atlas
-client = MongoClient(MONGO_URI)
+client = MongoClient(MONGO_URI, tls=True, tlsCAFile=certifi.where())
 
 # Test connection
 try:
