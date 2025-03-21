@@ -1,14 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const AdminDashboard = ({ onLogout }) => (
-  <div>
-    <h1>Admin Dashboard</h1>
-    <p>Welcome, admin! This is a restricted area.</p>
-    <Link to="/menu">
-      <button>Go to Menu Page</button>
-    </Link>
-  </div>
-);
+const AdminDashboard = ({ onLogout }) => {
+  const navigate = useNavigate();
+
+  const handleGoToMenu = () => {
+    navigate("/menu");
+  };
+
+  return (
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Welcome, admin! This is a restricted area.</p>
+      <button onClick={handleGoToMenu}>Go to Menu Page</button>
+    </div>
+  );
+};
 
 export default AdminDashboard;

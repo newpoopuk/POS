@@ -10,17 +10,9 @@ import Decrease from "./Decrease";
 import Decrease2 from "./Decrease2";
 import Decreasesummary from "./Decreasesummary";
 import ProductChanges from "./ProductChanges";
-import MenuPage from "./MenuPage";  // <-- Import your menu page
+import MenuPage from "./MenuPage";
+import AdminDashboard from "./admindashboard";
 
-// Add an AdminDashboard component (you can expand this as needed)
-const AdminDashboard = ({ onLogout }) => (
-  <div>
-    <h1>Admin Dashboard</h1>
-    <p>Welcome, admin! This is a restricted area.</p>
-    {/* Navigation link to the Menu Page */}
-    <a href="/menu">Go to Menu Page</a>
-  </div>
-);
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [customer_name, setCustomerName] = useState("");
@@ -46,10 +38,7 @@ function App() {
     setKey(key);
     setAgentId(agentId);
     setRole(role);
-    localStorage.setItem(
-      "user",
-      JSON.stringify({ customer_name, key, agentId, role })
-    );
+    localStorage.setItem("user", JSON.stringify({ customer_name, key, agentId, role }));
   };
 
   const handleLogout = () => {
@@ -182,12 +171,6 @@ function App() {
                 />
               }
             />
-            {/* Menu route */}
-            <Route
-              path="/menu"
-              element={<MenuPage />}
-            />
-            {/* Admin route */}
             <Route
               path="/admin"
               element={
@@ -198,11 +181,7 @@ function App() {
                 )
               }
             />
-            {/* Menu route */}
-            <Route
-              path="/menu"
-              element={<MenuPage />}
-            />
+            <Route path="/menu" element={<MenuPage />} />
           </>
         )}
         <Route path="*" element={<Navigate to="/" />} />
