@@ -4,24 +4,21 @@ import certifi
 import random
 from datetime import datetime, timedelta
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from pymongo import MongoClient  # Add this import
+from pymongo import MongoClient
 from passlib.context import CryptContext
-app = FastAPI()
-
-# MongoDB connection: Use the MONGO_URI environment variable if available.
 from dotenv import load_dotenv
 
-# Load variables from .env file
-load_dotenv()  # Uncomment this line
+app = FastAPI()
 
-# Use MongoDB URI from environment variables
-MONGO_URI = "mongodb://newpoopuk5:IEmkYZwoUMPHUqBp@pos1-shard-00-00.2qznf.mongodb.net:27017,pos1-shard-00-01.2qznf.mongodb.net:27017,pos1-shard-00-02.2qznf.mongodb.net:27017/POS1?replicaSet=atlas-oiwgrh-shard-0&ssl=true&authSource=admin"
+# Load environment variables
+load_dotenv()
 
+# MongoDB connection
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://newpoopuk5:IEmkYZwoUMPHUqBp@pos1-shard-00-00.2qznf.mongodb.net:27017,pos1-shard-00-01.2qznf.mongodb.net:27017,pos1-shard-00-02.2qznf.mongodb.net:27017/POS1?replicaSet=atlas-oiwgrh-shard-0&ssl=true&authSource=admin")
 
-# Connect to MongoDB Atlas
 client = MongoClient(MONGO_URI, tls=True, tlsCAFile=certifi.where())
 
 # Test connection
@@ -31,7 +28,7 @@ try:
 except Exception as e:
     print(f"❌ MongoDB connection error: {e}")
 
-# Setup databases and collections.
+# Setup databases and collections
 db = client["kitkats"]
 if "kitkats" not in db.list_collection_names():
     print("Collection 'kitkats' does not exist. Creating collection...")
@@ -48,29 +45,15 @@ else:
     print("Collection 'store' already exists.")
 store_collection = store_db["store"]
 
-# ---------------------------
-# Pydantic models
-# import os
-# from pymongo import MongoClient
-# from fastapi import FastAPI, HTTPException
-# from pydantic import BaseModel
-# from dotenv import load_dotenv
-# from passlib.context import CryptContext
-# import certifi
+auth_db = client["authentication"]
+if "users" not in auth_db.list_collection_names():
+    print("Collection 'users' does not exist. Creating collection...")
+    auth_db.create_collection("users")
+else:
+    print("Collection 'users' already exists.")
+user_collection = auth_db["users"]
 
-# app = FastAPI()
-
-# # Load environment variables
-# load_dotenv()
-
-# # MongoDB connection
-# MONGO_URI = os.getenv("MONGO_URI")
-
-# client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
-# db = client["mydatabase"]
-# user_collection = db["users"]
-
-# Password hashing context
+# Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
@@ -79,15 +62,17 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-# Remove these misplaced lines:
-#     username: str
-#     password: str
-
+# Pydantic models
 class User(BaseModel):
     username: str
     password: str
     customer_name: str
     agentId: str
+    role: str = "user"  # Add role field, default to "user"
+
+class UserAuth(BaseModel):
+    username: str
+    password: str
 
 class KitKat(BaseModel):
     agent: str
@@ -101,20 +86,18 @@ class Commodity(BaseModel):
     name: str
     image: str
 
-class UserAuth(BaseModel):
-    username: str
-    password: str
-    
     class Config:
         from_attributes = True
-# Add admin user if not exists
+
+# Add admin user on startup
 @app.on_event("startup")
 async def add_admin_user():
     admin_user = {
         "username": "admin",
-        "password": "admin",  # Store plain text password
+        "password": hash_password("admin"),  # Hash the admin password
         "customer_name": "Admin",
-        "agentId": "admin123"
+        "agentId": "admin123",
+        "role": "admin"  # Set role to admin
     }
     if not user_collection.find_one({"username": "admin"}):
         user_collection.insert_one(admin_user)
@@ -122,14 +105,18 @@ async def add_admin_user():
     else:
         print("Admin user already exists.")
 
-# ---------------------------
+# Middleware to check admin role
+async def require_admin(request: Request):
+    user_role = request.headers.get("user-role")
+    if not user_role or user_role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return True
+
 # FastAPI Endpoints
-# ---------------------------
 @app.get("/")
 async def root():
     return {"message": "Hello, welcome to the voting app!"}
 
-# Helper function to generate an ID.
 def generate_id(agent: str) -> str:
     created_date = datetime.now().strftime("%d-%m-%Y")
     created_time = datetime.now().strftime("%H.%M.%S")
@@ -157,7 +144,6 @@ async def create_kitkat(kitkat: KitKat):
 
 @app.post("/store/")
 async def create_store(store: Store):
-    # For demonstration, using a fixed date.
     store_data = {
         "Createddate": "23-11-2024",
         "Data_Lake": store.data_lake,
@@ -230,26 +216,18 @@ async def update_store_data(created_date: str):
     else:
         raise HTTPException(status_code=404, detail="Store document not found for the given date")
 
-# ---------------------------
 # User Authentication Endpoints
-# ---------------------------
-auth_db = client["authentication"]
-if "users" not in auth_db.list_collection_names():
-    print("Collection 'users' does not exist. Creating collection...")
-    auth_db.create_collection("users")
-else:
-    print("Collection 'users' already exists.")
-user_collection = auth_db["users"]
-
 @app.post("/users/")
 async def create_user(user: User):
     if user_collection.find_one({"username": user.username}):
         raise HTTPException(status_code=400, detail="Username already exists")
+    hashed_password = hash_password(user.password)
     user_data = {
         "username": user.username,
-        "password": user.password,  # Plain text; consider hashing in production.
+        "password": hashed_password,
         "customer_name": user.customer_name,
         "agentId": user.agentId,
+        "role": user.role,
     }
     result = user_collection.insert_one(user_data)
     return {
@@ -257,22 +235,30 @@ async def create_user(user: User):
         "username": user.username,
         "customer_name": user.customer_name,
         "agentId": user.agentId,
+        "role": user.role,
     }
 
 @app.post("/users/authenticate/")
 async def authenticate_user(user: UserAuth):
-    db_user = user_collection.find_one({"username": user.username, "password": user.password})
-    if not db_user:
+    print(f"Querying MongoDB for user: {user.username}")
+    db_user = user_collection.find_one({"username": user.username})
+    if not db_user or not verify_password(user.password, db_user["password"]):
+        print("User not found or password incorrect in MongoDB.")
         raise HTTPException(status_code=400, detail="Invalid username or password")
+    print("User found:", db_user)
     return {
         "customer_name": db_user["customer_name"],
         "key": "abc1357",
         "agentId": db_user["agentId"],
+        "role": db_user["role"],
     }
 
-# ---------------------------
+# Example admin-only endpoint
+@app.get("/admin", dependencies=[Depends(require_admin)])
+async def admin_dashboard():
+    return {"message": "Welcome to the admin dashboard"}
+
 # Commodity Endpoints
-# ---------------------------
 commodity_db = client["commodity"]
 commodity_collection = commodity_db["commodity"]
 price_config_collection = commodity_db["price_config"]
@@ -403,12 +389,10 @@ async def process_data(date: str = Query(..., description="Date in DD-MM-YYYY fo
         result.append(adjusted_data)
     return result
 
-# ---------------------------
 # Middleware
-# ---------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Adjust as needed for your front-end.
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

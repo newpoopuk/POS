@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Container, Card, Form, Button, Modal } from 'react-bootstrap';
-import axios from 'axios'; // Import axios for API requests
+import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate } from 'react-router-dom'; // For navigation
 
 const LoginPage = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [showModal, setShowModal] = useState(false); // Modal for errors
+  const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // For redirecting after login
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
@@ -16,29 +19,45 @@ const LoginPage = ({ onLogin }) => {
       setShowModal(true);
       return;
     }
+    console.log('Sending login request with:', { username, password });
     setLoading(true);
     try {
       const response = await axios.post('http://localhost:8000/users/authenticate/', {
         username: username,
         password: password,
       });
-
       console.log('Login successful:', response.data);
       setLoading(false);
-      // Pass customer_name and key to App.js
-      onLogin(response.data.customer_name, response.data.key, response.data.agentId);
 
+      // Store user data (e.g., in localStorage or pass to parent)
+      const { customer_name, key, agentId, role } = response.data;
+      onLogin(customer_name, key, agentId, role);
+
+      // Redirect based on role
+      if (role === 'admin') {
+        navigate('/admin'); // Redirect to admin dashboard
+      } else {
+        navigate('/dashboard'); // Redirect to regular user dashboard
+      }
     } catch (err) {
       console.error('Error logging in:', err);
-      setError('Invalid username or password.');
+      if (err.response) {
+        console.log('Response data:', err.response.data);
+        console.log('Response status:', err.response.status);
+        setError(err.response.data.detail || 'Invalid username or password.');
+      } else {
+        setError('Unable to connect to the server. Please try again later.');
+      }
       setShowModal(true);
       setLoading(false);
     }
   };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setError('');
   };
+
   return (
     <Container fluid className="d-flex justify-content-center align-items-center vh-100">
       <Card className="shadow p-4" style={{ width: '100%', maxWidth: '400px' }}>
@@ -72,7 +91,6 @@ const LoginPage = ({ onLogin }) => {
         </Form>
       </Card>
 
-      {/* Modal for error pop-up */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Error</Modal.Title>
