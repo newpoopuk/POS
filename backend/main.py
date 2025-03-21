@@ -18,7 +18,8 @@ from dotenv import load_dotenv
 load_dotenv()  # Uncomment this line
 
 # Use MongoDB URI from environment variables
-MONGO_URI = os.getenv("MONGO_URI")
+MONGO_URI = "mongodb://newpoopuk5:IEmkYZwoUMPHUqBp@pos1-shard-00-00.2qznf.mongodb.net:27017,pos1-shard-00-01.2qznf.mongodb.net:27017,pos1-shard-00-02.2qznf.mongodb.net:27017/POS1?replicaSet=atlas-oiwgrh-shard-0&ssl=true&authSource=admin"
+
 
 # Connect to MongoDB Atlas
 client = MongoClient(MONGO_URI, tls=True, tlsCAFile=certifi.where())
