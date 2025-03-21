@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient  # Add this import
-
+from passlib.context import CryptContext
 app = FastAPI()
 
 # MongoDB connection: Use the MONGO_URI environment variable if available.
