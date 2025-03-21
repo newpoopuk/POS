@@ -79,8 +79,9 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-    username: str
-    password: str
+# Remove these misplaced lines:
+#     username: str
+#     password: str
 
 class User(BaseModel):
     username: str
@@ -90,7 +91,7 @@ class User(BaseModel):
 
 class KitKat(BaseModel):
     agent: str
-    data_lake: List[List]  # Each element should be a list (e.g., [product, value])
+    data_lake: List[List]
 
 class Store(BaseModel):
     data_lake: List[List]
@@ -99,14 +100,13 @@ class Commodity(BaseModel):
     ref: int
     name: str
     image: str
+
 class UserAuth(BaseModel):
     username: str
     password: str
     
     class Config:
-        # Helps convert ObjectId from MongoDB to string if needed.
         from_attributes = True
-
 # Add admin user if not exists
 @app.on_event("startup")
 async def add_admin_user():
