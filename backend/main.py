@@ -6,25 +6,16 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pymongo import MongoClient
 from pydantic import BaseModel
+from pymongo import MongoClient  # Add this import
 
 app = FastAPI()
 
 # MongoDB connection: Use the MONGO_URI environment variable if available.
-import os
 from dotenv import load_dotenv
 
 # Load variables from .env file
-# load_dotenv()
-
-# Use environment variable for MongoDB URI
-import os
-from pymongo import MongoClient
-from dotenv import load_dotenv
-
-# Load environment variables
-# load_dotenv()
+load_dotenv()  # Uncomment this line
 
 # Use MongoDB URI from environment variables
 MONGO_URI = os.getenv("MONGO_URI")
