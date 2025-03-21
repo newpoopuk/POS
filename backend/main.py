@@ -1,4 +1,6 @@
 import os
+import ssl
+import certifi
 import random
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -14,7 +16,7 @@ import os
 from dotenv import load_dotenv
 
 # Load variables from .env file
-load_dotenv()
+# load_dotenv()
 
 # Use environment variable for MongoDB URI
 import os
@@ -22,7 +24,7 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+# load_dotenv()
 
 # Use MongoDB URI from environment variables
 MONGO_URI = os.getenv("MONGO_URI")
