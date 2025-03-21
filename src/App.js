@@ -13,6 +13,28 @@ import ProductChanges from "./ProductChanges";
 import MenuPage from "./MenuPage";
 import AdminDashboard from "./admindashboard";
 
+// A simple common header with navigation links that can be shown on pages
+const Header = ({ role }) => {
+  return (
+    <header style={{ padding: "10px", backgroundColor: "#f0f0f0" }}>
+      <nav>
+        <a href="/food-ordering-app" style={{ marginRight: "15px" }}>Home</a>
+        {role === "admin" && (
+          <>
+            <a href="/admin" style={{ marginRight: "15px" }}>Admin Dashboard</a>
+            <a href="/menu" style={{ marginRight: "15px" }}>Menu</a>
+          </>
+        )}
+        {role !== "admin" && (
+          <a href="/menu" style={{ marginRight: "15px" }}>Menu</a>
+        )}
+        <a href="/dashboard" style={{ marginRight: "15px" }}>Dashboard</a>
+        <a href="/report" style={{ marginRight: "15px" }}>Report</a>
+      </nav>
+    </header>
+  );
+};
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [customer_name, setCustomerName] = useState("");
@@ -52,12 +74,13 @@ function App() {
 
   return (
     <Router>
+      {isLoggedIn && <Header role={role} />}
       <Routes>
         {!isLoggedIn ? (
           <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
         ) : (
           <>
-            {/* Default route */}
+            {/* If logged in, the default route redirects based on role */}
             <Route
               path="/"
               element={
@@ -178,14 +201,15 @@ function App() {
                 role === "admin" ? (
                   <AdminDashboard onLogout={handleLogout} />
                 ) : (
-                  <Navigate to="/" />
+                  <Navigate to="/food-ordering-app" />
                 )
               }
             />
-            {/* Menu route */}
+            {/* Menu route always available */}
             <Route path="/menu" element={<MenuPage />} />
           </>
         )}
+        {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
