@@ -71,13 +71,13 @@ store_collection = store_db["store"]
 # user_collection = db["users"]
 
 # Password hashing context
-# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# def hash_password(password: str) -> str:
-#     return pwd_context.hash(password)
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
 
-# def verify_password(plain_password: str, hashed_password: str) -> bool:
-#     return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
 # Pydantic models
 class UserAuth(BaseModel):
