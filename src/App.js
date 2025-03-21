@@ -10,12 +10,15 @@ import Decrease from "./Decrease";
 import Decrease2 from "./Decrease2";
 import Decreasesummary from "./Decreasesummary";
 import ProductChanges from "./ProductChanges";
+import MenuPage from "./MenuPage";  // <-- Import your menu page
 
-// Add an AdminDashboard component (you can create this later)
-const AdminDashboard = () => (
+// Add an AdminDashboard component (you can expand this as needed)
+const AdminDashboard = ({ onLogout }) => (
   <div>
     <h1>Admin Dashboard</h1>
     <p>Welcome, admin! This is a restricted area.</p>
+    {/* Navigation link to the Menu Page */}
+    <a href="/menu">Go to Menu Page</a>
   </div>
 );
 
@@ -26,7 +29,6 @@ function App() {
   const [agentId, setAgentId] = useState("");
   const [role, setRole] = useState(""); // Add role state
 
-  // Load login state from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -39,21 +41,18 @@ function App() {
     }
   }, []);
 
-  // Handle login: Update state and store in localStorage
   const handleLogin = (customer_name, key, agentId, role) => {
     setIsLoggedIn(true);
     setCustomerName(customer_name);
     setKey(key);
     setAgentId(agentId);
     setRole(role);
-    // Store in localStorage to persist across refreshes
     localStorage.setItem(
       "user",
       JSON.stringify({ customer_name, key, agentId, role })
     );
   };
 
-  // Handle logout: Clear state and localStorage
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCustomerName("");
@@ -66,12 +65,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* If not logged in, show LoginPage */}
         {!isLoggedIn ? (
           <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
         ) : (
           <>
-            {/* Redirect based on role */}
             <Route
               path="/"
               element={
@@ -197,9 +194,13 @@ function App() {
                 )
               }
             />
+            {/* Menu route */}
+            <Route
+              path="/menu"
+              element={<MenuPage />}
+            />
           </>
         )}
-        {/* Redirect any unknown routes to the root */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
