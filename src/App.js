@@ -21,7 +21,6 @@ const AdminDashboard = ({ onLogout }) => (
     <a href="/menu">Go to Menu Page</a>
   </div>
 );
-
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [customer_name, setCustomerName] = useState("");
@@ -182,6 +181,11 @@ function App() {
                   onLogout={handleLogout}
                 />
               }
+            />
+            {/* Menu route */}
+            <Route
+              path="/menu"
+              element={<MenuPage />}
             />
             {/* Admin route */}
             <Route
